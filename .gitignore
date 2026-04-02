@@ -38,3 +38,9 @@ next-env.d.ts
 # Supabase local dev
 .supabase/
 supabase/.branches/
+
+# Project internals
+.worktrees/
+.claude/
+.superpowers/
+*.png
