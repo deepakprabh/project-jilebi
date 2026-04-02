@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation'
-
 export default function RootPage() {
-  redirect('/de')
+  // Middleware handles locale routing — this page should never be rendered directly
+  return null
 }

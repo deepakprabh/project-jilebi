@@ -1,9 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
+import { locales } from '@/i18n/locales'
 import '../globals.css'
-
-const locales = ['de', 'en']
 
 export default async function LocaleLayout({
   children,
@@ -13,7 +12,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  if (!locales.includes(locale)) notFound()
+  if (!locales.includes(locale as (typeof locales)[number])) notFound()
   const messages = await getMessages()
 
   return (
