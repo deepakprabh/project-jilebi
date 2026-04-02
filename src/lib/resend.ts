@@ -1,0 +1,68 @@
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+const FROM = process.env.RESEND_FROM_EMAIL ?? 'reservierungen@jilebi.de'
+
+type Reservation = {
+  id: string
+  name: string
+  email: string
+  date: string
+  language: 'de' | 'en'
+  party_size: number
+  notes?: string | null
+  time_slots?: { start_time: string; end_time: string } | null
+}
+
+function formatDate(date: string, locale: string) {
+  return new Date(date).toLocaleDateString(locale === 'en' ? 'en-GB' : 'de-DE', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
+export async function sendConfirmationEmail(reservation: Reservation) {
+  const isDE = reservation.language !== 'en'
+  const subject = isDE
+    ? 'Ihre Reservierung bei Jilebi — Bestätigung'
+    : 'Your reservation at Jilebi — Confirmation'
+
+  const html = isDE
+    ? `<p>Liebe(r) ${reservation.name},</p>
+       <p>vielen Dank für Ihre Reservierung bei <strong>Jilebi</strong>.</p>
+       <p><strong>Datum:</strong> ${formatDate(reservation.date, 'de')}<br>
+       <strong>Uhrzeit:</strong> ${reservation.time_slots?.start_time ?? ''} – ${reservation.time_slots?.end_time ?? ''}<br>
+       <strong>Personen:</strong> ${reservation.party_size}</p>
+       <p>Wir freuen uns auf Ihren Besuch!</p>
+       <p>Ihr Jilebi-Team<br>Nürtingen</p>`
+    : `<p>Dear ${reservation.name},</p>
+       <p>Thank you for reserving a table at <strong>Jilebi</strong>.</p>
+       <p><strong>Date:</strong> ${formatDate(reservation.date, 'en')}<br>
+       <strong>Time:</strong> ${reservation.time_slots?.start_time ?? ''} – ${reservation.time_slots?.end_time ?? ''}<br>
+       <strong>Guests:</strong> ${reservation.party_size}</p>
+       <p>We look forward to welcoming you!</p>
+       <p>The Jilebi Team<br>Nürtingen</p>`
+
+  await resend.emails.send({ from: FROM, to: reservation.email, subject, html })
+}
+
+export async function sendCancellationEmail(reservation: Reservation) {
+  const isDE = reservation.language !== 'en'
+  const subject = isDE
+    ? 'Ihre Reservierung bei Jilebi — Stornierung'
+    : 'Your reservation at Jilebi — Cancellation'
+
+  const html = isDE
+    ? `<p>Liebe(r) ${reservation.name},</p>
+       <p>Ihre Reservierung am ${formatDate(reservation.date, 'de')} wurde leider storniert.</p>
+       <p>Bitte kontaktieren Sie uns für eine neue Buchung.</p>
+       <p>Ihr Jilebi-Team</p>`
+    : `<p>Dear ${reservation.name},</p>
+       <p>Unfortunately your reservation on ${formatDate(reservation.date, 'en')} has been cancelled.</p>
+       <p>Please contact us to make a new booking.</p>
+       <p>The Jilebi Team</p>`
+
+  await resend.emails.send({ from: FROM, to: reservation.email, subject, html })
+}

@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory text-charcoal font-sans;
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply px-6 py-20 md:px-16 lg:px-24;
+  }
+  .section-title {
+    @apply font-serif text-4xl font-normal tracking-brand text-charcoal uppercase;
+  }
+  .gold-rule {
+    @apply block w-12 h-px bg-gold my-5;
+  }
+  .btn-primary {
+    @apply bg-charcoal text-ivory px-6 py-3 text-xs tracking-widest uppercase font-sans hover:bg-gold transition-colors duration-200;
+  }
+  .btn-outline {
+    @apply border border-gold text-gold px-6 py-3 text-xs tracking-widest uppercase font-sans hover:bg-gold hover:text-ivory transition-colors duration-200;
+  }
+}
