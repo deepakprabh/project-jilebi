@@ -2,7 +2,10 @@
 
 import { supabaseAdmin } from '@/lib/supabase'
 
-export async function updateReservationStatus(id: string, status: 'confirmed' | 'cancelled') {
+export async function updateReservationStatus(id: string, status: 'confirmed' | 'cancelled', password: string) {
+  if (password !== process.env.ADMIN_PASSWORD) {
+    throw new Error('Unauthorized')
+  }
   const { data, error } = await supabaseAdmin
     .from('reservations')
     .update({ status })

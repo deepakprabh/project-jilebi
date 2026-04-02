@@ -18,8 +18,10 @@ type Reservation = {
 
 export default function ReservationTable({
   reservations: initial,
+  password,
 }: {
   reservations: Reservation[]
+  password: string
 }) {
   const [reservations, setReservations] = useState(initial)
   const [loading, setLoading] = useState<string | null>(null)
@@ -29,7 +31,7 @@ export default function ReservationTable({
     setLoading(id)
     setError(null)
     try {
-      const reservation = await updateReservationStatus(id, status)
+      const reservation = await updateReservationStatus(id, status, password)
       setReservations((prev) => prev.map((r) => (r.id === id ? reservation : r)))
     } catch {
       setError('Aktion fehlgeschlagen. Bitte versuche es erneut.')
