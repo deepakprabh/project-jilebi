@@ -1,3 +1,13 @@
+import Hero from '@/components/sections/Hero'
+import About from '@/components/sections/About'
+import Menu from '@/components/sections/Menu'
+
 export default function HomePage() {
-  return <main><h1>Jilebi</h1></main>
+  return (
+    <main>
+      <Hero />
+      <About />
+      <Menu />
+    </main>
+  )
 }
