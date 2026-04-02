@@ -1,9 +1,14 @@
 import Link from 'next/link'
 
-export default function DatenschutzPage() {
+export default function DatenschutzPage({ params }: { params: { locale: string } }) {
   return (
     <main className="section-padding max-w-2xl mx-auto">
-      <h1 className="font-serif text-3xl text-charcoal tracking-brand uppercase mb-6">Datenschutzerklärung</h1>
+      {params.locale === 'en' && (
+        <p className="text-xs text-muted mb-6 italic">
+          This page is only available in German as required by German law (TMG § 5).
+        </p>
+      )}
+      <h1 className="section-title mb-6">Datenschutzerklärung</h1>
 
       <div className="text-sm text-muted leading-relaxed space-y-6">
         <section>
@@ -28,7 +33,7 @@ export default function DatenschutzPage() {
         </section>
         <section>
           <h2 className="text-charcoal font-medium mb-2">6. Google Maps</h2>
-          <p>Diese Website verwendet Google Maps zur Darstellung unseres Standorts. Anbieter: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA. Datenschutzerklärung: https://policies.google.com/privacy</p>
+          <p>Diese Website verwendet Google Maps zur Darstellung unseres Standorts. Anbieter: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA. Datenschutzerklärung: <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-charcoal transition-colors">policies.google.com/privacy</a></p>
         </section>
       </div>
 
