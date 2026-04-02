@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(npm run:*)",
+      "Bash(npx jest:*)",
+      "Bash(npm test:*)",
+      "Bash(find 'C:/Users/revat/OneDrive/Desktop/Agentic engineering/Project Jilebi/.worktrees/jilebi-website/src' -name *.css -o -name *.json)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}
