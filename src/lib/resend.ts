@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const getResend = () => new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM_EMAIL ?? 'reservierungen@jilebi.de'
 
 type Reservation = {
@@ -45,7 +45,7 @@ export async function sendConfirmationEmail(reservation: Reservation) {
        <p>We look forward to welcoming you!</p>
        <p>The Jilebi Team<br>Nürtingen</p>`
 
-  await resend.emails.send({ from: FROM, to: reservation.email, subject, html })
+  await getResend().emails.send({ from: FROM, to: reservation.email, subject, html })
 }
 
 export async function sendCancellationEmail(reservation: Reservation) {
@@ -64,5 +64,5 @@ export async function sendCancellationEmail(reservation: Reservation) {
        <p>Please contact us to make a new booking.</p>
        <p>The Jilebi Team</p>`
 
-  await resend.emails.send({ from: FROM, to: reservation.email, subject, html })
+  await getResend().emails.send({ from: FROM, to: reservation.email, subject, html })
 }

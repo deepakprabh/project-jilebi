@@ -1,12 +1,12 @@
 'use server'
 
-import { supabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function updateReservationStatus(password: string, id: string, status: 'confirmed' | 'cancelled') {
   if (password !== process.env.ADMIN_PASSWORD) {
     throw new Error('Unauthorized')
   }
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('reservations')
     .update({ status })
     .eq('id', id)

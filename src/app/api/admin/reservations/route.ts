@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 import { isAdminAuthorized } from '@/lib/auth'
 import { sendCancellationEmail } from '@/lib/resend'
 
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('reservations')
     .select('*, time_slots(start_time, end_time)')
     .order('date', { ascending: true })
@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'id and status required' }, { status: 400 })
   }
 
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await getSupabaseAdmin()
     .from('reservations')
     .update({ status })
     .eq('id', id)

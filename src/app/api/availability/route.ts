@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get('date')
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const dayOfWeek = new Date(date).getDay()
 
   // Fetch template slots for this day of week
-  const { data: slots, error: slotsError } = await supabase
+  const { data: slots, error: slotsError } = await getSupabase()
     .from('time_slots')
     .select('*')
     .eq('day_of_week', dayOfWeek)
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const slotIds = slots.map((s) => s.id)
 
   // Count booked party sizes per slot for this date
-  const { data: reservations, error: resError } = await supabase
+  const { data: reservations, error: resError } = await getSupabase()
     .from('reservations')
     .select('time_slot_id, party_size')
     .eq('date', date)

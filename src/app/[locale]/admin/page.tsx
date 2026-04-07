@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 import ReservationTable from '@/components/admin/ReservationTable'
 import { updateReservationStatus } from './actions'
 
@@ -27,7 +27,7 @@ export default async function AdminPage({
     )
   }
 
-  const { data: reservations, error } = await supabaseAdmin
+  const { data: reservations, error } = await getSupabaseAdmin()
     .from('reservations')
     .select('*, time_slots(start_time, end_time)')
     .order('date', { ascending: true })
