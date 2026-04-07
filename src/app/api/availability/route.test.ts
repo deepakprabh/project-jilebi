@@ -4,18 +4,17 @@
 import { GET } from './route'
 import { NextRequest } from 'next/server'
 
-// Mock Supabase
+const mockFrom = jest.fn()
+
 jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    from: jest.fn().mockReturnThis(),
-    select: jest.fn().mockReturnThis(),
-    eq: jest.fn().mockReturnThis(),
-  },
+  getSupabase: () => ({ from: mockFrom }),
 }))
 
-import { supabase } from '@/lib/supabase'
-
 describe('GET /api/availability', () => {
+  beforeEach(() => {
+    mockFrom.mockReset()
+  })
+
   it('returns 400 when date param is missing', async () => {
     const req = new NextRequest('http://localhost/api/availability')
     const res = await GET(req)
@@ -24,21 +23,48 @@ describe('GET /api/availability', () => {
     expect(body.error).toBe('date parameter required')
   })
 
-  it('returns available slots for a valid date', async () => {
+  it('returns empty slots when none exist for the day', async () => {
+    mockFrom.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          eq: () => Promise.resolve({ data: [], error: null }),
+        }),
+      }),
+    })
+
+    const req = new NextRequest('http://localhost/api/availability?date=2026-04-13') // Monday = closed
+    const res = await GET(req)
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.slots).toEqual([])
+  })
+
+  it('returns available slots with correct booking count', async () => {
     const mockSlots = [
-      { id: 'slot-1', start_time: '18:00', end_time: '20:00', max_capacity: 20, is_blocked: false },
+      { id: 'slot-1', start_time: '18:00:00', end_time: '20:00:00', max_capacity: 20, is_blocked: false, day_of_week: 3 },
     ]
     const mockReservations = [
       { time_slot_id: 'slot-1', party_size: 5 },
     ]
 
-    ;(supabase.from as jest.Mock)
-      .mockImplementationOnce(() => ({
-        select: () => ({ eq: () => ({ eq: () => Promise.resolve({ data: mockSlots, error: null }) }) }),
-      }))
-      .mockImplementationOnce(() => ({
-        select: () => ({ eq: () => ({ in: () => Promise.resolve({ data: mockReservations, error: null }) }) }),
-      }))
+    // First call: time_slots query
+    mockFrom.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          eq: () => Promise.resolve({ data: mockSlots, error: null }),
+        }),
+      }),
+    })
+    // Second call: reservations query
+    mockFrom.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          in: () => ({
+            neq: () => Promise.resolve({ data: mockReservations, error: null }),
+          }),
+        }),
+      }),
+    })
 
     const req = new NextRequest('http://localhost/api/availability?date=2026-04-15')
     const res = await GET(req)

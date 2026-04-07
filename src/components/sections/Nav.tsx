@@ -1,8 +1,7 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 
 export default function Nav() {
   const t = useTranslations('nav')
@@ -10,8 +9,6 @@ export default function Nav() {
   const pathname = usePathname()
 
   const altLocale = locale === 'de' ? 'en' : 'de'
-  const cleanPath = pathname.replace(/^\/(de|en)/, '') || '/'
-  const altPath = locale === 'de' ? `/en${cleanPath === '/' ? '' : cleanPath}` : cleanPath
 
   const navLinks = [
     { href: '#about', label: t('about') },
@@ -24,7 +21,7 @@ export default function Nav() {
     <nav className="sticky top-0 z-50 bg-ivory/95 backdrop-blur-sm border-b border-sand">
       <div className="max-w-7xl mx-auto px-6 md:px-16 h-16 flex items-center justify-between">
         {/* Wordmark */}
-        <Link href={locale === 'de' ? '/' : '/en'} className="font-serif text-lg tracking-brand uppercase text-charcoal">
+        <Link href="/" className="font-serif text-lg tracking-brand uppercase text-charcoal">
           Jilebi
         </Link>
 
@@ -40,7 +37,8 @@ export default function Nav() {
             </a>
           ))}
           <Link
-            href={altPath}
+            href={pathname}
+            locale={altLocale}
             className="text-xs tracking-widest uppercase text-gold hover:text-charcoal transition-colors"
           >
             {t('lang')}
@@ -54,7 +52,7 @@ export default function Nav() {
 
         {/* Mobile: language + CTA only */}
         <div className="flex md:hidden items-center gap-4">
-          <Link href={altPath} className="text-xs tracking-widest uppercase text-gold">
+          <Link href={pathname} locale={altLocale} className="text-xs tracking-widest uppercase text-gold">
             {t('lang')}
           </Link>
           <a href="#reservation" className="btn-primary text-xs">

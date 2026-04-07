@@ -4,16 +4,17 @@
 import { POST } from './route'
 import { NextRequest } from 'next/server'
 
+const mockFrom = jest.fn()
+
 jest.mock('@/lib/supabase', () => ({
-  supabaseAdmin: {
-    from: jest.fn(),
-  },
+  getSupabaseAdmin: () => ({ from: mockFrom }),
 }))
 jest.mock('@/lib/resend', () => ({
   sendConfirmationEmail: jest.fn().mockResolvedValue(undefined),
 }))
-
-import { supabaseAdmin } from '@/lib/supabase'
+jest.mock('@/lib/rate-limit', () => ({
+  rateLimit: () => ({ limited: false, remaining: 4, resetAt: Date.now() + 60000 }),
+}))
 
 const validBody = {
   name: 'Maria Müller',
@@ -27,6 +28,10 @@ const validBody = {
 }
 
 describe('POST /api/reservations', () => {
+  beforeEach(() => {
+    mockFrom.mockReset()
+  })
+
   it('returns 400 when required fields are missing', async () => {
     const req = new NextRequest('http://localhost/api/reservations', {
       method: 'POST',
@@ -37,12 +42,9 @@ describe('POST /api/reservations', () => {
   })
 
   it('creates a reservation and returns 201', async () => {
-    const mockInsert = {
-      data: [{ ...validBody, id: 'res-uuid-1', status: 'pending', created_at: new Date().toISOString() }],
-      error: null,
-    }
-    ;(supabaseAdmin.from as jest.Mock).mockReturnValue({
-      insert: () => ({ select: () => Promise.resolve(mockInsert) }),
+    const mockData = [{ ...validBody, id: 'res-uuid-1', status: 'pending', created_at: new Date().toISOString(), time_slots: { start_time: '18:00:00', end_time: '20:00:00' } }]
+    mockFrom.mockReturnValue({
+      insert: () => ({ select: () => Promise.resolve({ data: mockData, error: null }) }),
     })
 
     const req = new NextRequest('http://localhost/api/reservations', {
@@ -53,5 +55,20 @@ describe('POST /api/reservations', () => {
     expect(res.status).toBe(201)
     const body = await res.json()
     expect(body.reservation.id).toBe('res-uuid-1')
+  })
+
+  it('returns 409 when slot capacity is exceeded', async () => {
+    mockFrom.mockReturnValue({
+      insert: () => ({ select: () => Promise.resolve({ data: null, error: { message: 'Slot capacity exceeded: 19 of 20 seats taken, requested 3' } }) }),
+    })
+
+    const req = new NextRequest('http://localhost/api/reservations', {
+      method: 'POST',
+      body: JSON.stringify({ ...validBody, party_size: 3 }),
+    })
+    const res = await POST(req)
+    expect(res.status).toBe(409)
+    const body = await res.json()
+    expect(body.error).toBe('This time slot is fully booked')
   })
 })
