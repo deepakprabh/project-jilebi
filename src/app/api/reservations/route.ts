@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase'
 import { sendConfirmationEmail } from '@/lib/resend'
+import { rateLimit } from '@/lib/rate-limit'
 
 const REQUIRED_FIELDS = ['name', 'email', 'phone', 'party_size', 'date', 'time_slot_id', 'language']
 
 export async function POST(req: NextRequest) {
+  // Rate limit: 5 reservations per IP per minute
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const { limited, remaining, resetAt } = rateLimit(ip, 5, 60_000)
+  if (limited) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((resetAt - Date.now()) / 1000)),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    )
+  }
+
   const body = await req.json()
 
   const missing = REQUIRED_FIELDS.filter((f) => body[f] == null || body[f] === '')

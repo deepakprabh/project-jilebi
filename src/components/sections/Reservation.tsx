@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { DayPicker } from 'react-day-picker'
 import { format, addDays, startOfToday } from 'date-fns'
@@ -29,6 +29,7 @@ export default function Reservation() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const abortRef = useRef<AbortController | null>(null)
 
   const today = startOfToday()
   const maxDate = addDays(today, 30)
@@ -36,14 +37,26 @@ export default function Reservation() {
   async function handleDateSelect(date: Date | undefined) {
     setSelectedDate(date)
     setSelectedSlotId(null)
+    setError(null)
     if (!date) return
+
+    // Abort any in-flight request to prevent stale data race
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
     setLoadingSlots(true)
     try {
-      const res = await fetch(`/api/availability?date=${format(date, 'yyyy-MM-dd')}`)
+      const res = await fetch(`/api/availability?date=${format(date, 'yyyy-MM-dd')}`, {
+        signal: controller.signal,
+      })
+      if (!res.ok) throw new Error('Failed to load availability')
       const data = await res.json()
       setSlots(data.slots ?? [])
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
       setSlots([])
+      setError(t('error'))
     } finally {
       setLoadingSlots(false)
     }
