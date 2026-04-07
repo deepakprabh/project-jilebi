@@ -1,28 +1,16 @@
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { isAdminSession } from '@/lib/auth'
 import ReservationTable from '@/components/admin/ReservationTable'
+import AdminLogin from '@/components/admin/AdminLogin'
 import { updateReservationStatus } from './actions'
 
-export default async function AdminPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ pw?: string }>
-}) {
-  const password = process.env.ADMIN_PASSWORD!
-  const { pw: provided } = await searchParams
+export default async function AdminPage() {
+  const authorized = await isAdminSession()
 
-  if (provided !== password) {
+  if (!authorized) {
     return (
       <main className="min-h-screen bg-ivory flex items-center justify-center">
-        <form method="GET" className="flex flex-col gap-4 w-full max-w-xs">
-          <h1 className="font-serif text-2xl text-charcoal tracking-brand uppercase">Jilebi Admin</h1>
-          <input
-            name="pw"
-            type="password"
-            placeholder="Passwort"
-            className="border-b border-sand bg-transparent pb-2 text-sm text-charcoal placeholder-muted focus:border-gold focus:outline-none"
-          />
-          <button type="submit" className="btn-primary">Anmelden</button>
-        </form>
+        <AdminLogin />
       </main>
     )
   }
@@ -43,7 +31,7 @@ export default async function AdminPage({
           <h1 className="font-serif text-3xl text-charcoal tracking-brand uppercase">Jilebi Admin</h1>
           <span className="text-xs text-muted">{reservations?.length ?? 0} Reservierungen</span>
         </div>
-        <ReservationTable reservations={reservations ?? []} updateStatus={updateReservationStatus.bind(null, provided!)} />
+        <ReservationTable reservations={reservations ?? []} updateStatus={updateReservationStatus} />
       </div>
     </main>
   )

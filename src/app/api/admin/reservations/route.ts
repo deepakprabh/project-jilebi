@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest) {
     .from('reservations')
     .update({ status })
     .eq('id', id)
-    .select()
+    .select('*, time_slots(start_time, end_time)')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

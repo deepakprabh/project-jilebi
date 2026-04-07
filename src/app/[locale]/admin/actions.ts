@@ -1,11 +1,13 @@
 'use server'
 
 import { getSupabaseAdmin } from '@/lib/supabase'
+import { isAdminSession } from '@/lib/auth'
+import { sendCancellationEmail } from '@/lib/resend'
 
-export async function updateReservationStatus(password: string, id: string, status: 'confirmed' | 'cancelled') {
-  if (password !== process.env.ADMIN_PASSWORD) {
-    throw new Error('Unauthorized')
-  }
+export async function updateReservationStatus(id: string, status: 'confirmed' | 'cancelled') {
+  const authorized = await isAdminSession()
+  if (!authorized) throw new Error('Unauthorized')
+
   const { data, error } = await getSupabaseAdmin()
     .from('reservations')
     .update({ status })
@@ -14,5 +16,10 @@ export async function updateReservationStatus(password: string, id: string, stat
     .single()
 
   if (error) throw new Error(error.message)
+
+  if (status === 'cancelled') {
+    sendCancellationEmail(data).catch(console.error)
+  }
+
   return data
 }

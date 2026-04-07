@@ -17,7 +17,7 @@ type Reservation = {
 
 export default function ReservationTable({
   reservations: initial,
-  updateStatus: boundUpdateStatus,
+  updateStatus: serverUpdateStatus,
 }: {
   reservations: Reservation[]
   updateStatus: (id: string, status: 'confirmed' | 'cancelled') => Promise<Reservation>
@@ -30,7 +30,7 @@ export default function ReservationTable({
     setLoading(id)
     setError(null)
     try {
-      const reservation = await boundUpdateStatus(id, status)
+      const reservation = await serverUpdateStatus(id, status)
       setReservations((prev) => prev.map((r) => (r.id === id ? reservation : r)))
     } catch {
       setError('Aktion fehlgeschlagen. Bitte versuche es erneut.')
