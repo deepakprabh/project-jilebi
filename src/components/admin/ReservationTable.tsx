@@ -79,7 +79,7 @@ export default function ReservationTable({
                     <div className="text-xs text-muted mt-0.5">
                       {r.time_slots?.start_time} – {r.time_slots?.end_time} · {r.party_size} Pers. · {r.phone}
                     </div>
-                    {r.notes && <div className="text-xs text-muted italic mt-0.5">"{r.notes}"</div>}
+                    {r.notes && <div className="text-xs text-muted italic mt-0.5">&ldquo;{r.notes}&rdquo;</div>}
                   </div>
                   {r.status === 'pending' && (
                     <div className="flex gap-2">
