@@ -25,10 +25,14 @@ export async function POST(req: NextRequest) {
       notes: body.notes ?? null,
       status: 'pending',
     })
-    .select()
+    .select('*, time_slots(start_time, end_time)')
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    const isCapacity = error.message.includes('Slot capacity exceeded')
+    return NextResponse.json(
+      { error: isCapacity ? 'This time slot is fully booked' : error.message },
+      { status: isCapacity ? 409 : 500 }
+    )
   }
 
   const reservation = data[0]

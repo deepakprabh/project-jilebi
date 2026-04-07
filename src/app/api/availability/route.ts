@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'date parameter required' }, { status: 400 })
   }
 
-  const dayOfWeek = new Date(date).getDay()
+  const dayOfWeek = new Date(date).getUTCDay()
 
   // Fetch template slots for this day of week
   const { data: slots, error: slotsError } = await getSupabase()

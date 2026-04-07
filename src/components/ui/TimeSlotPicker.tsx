@@ -18,6 +18,7 @@ export default function TimeSlotPicker({ slots, selected, onSelect }: Props) {
     <div className="flex flex-wrap gap-3">
       {slots.map((slot) => (
         <button
+          type="button"
           key={slot.id}
           onClick={() => slot.available && onSelect(slot.id)}
           disabled={!slot.available}
