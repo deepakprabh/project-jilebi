@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import GoldenRule from '@/components/ui/GoldenRule'
 
@@ -24,10 +25,9 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Hero image placeholder */}
-        <div className="relative h-80 lg:h-[480px] bg-sand rounded-sm overflow-hidden flex items-center justify-center">
-          {/* Replace with: <Image src="/hero.jpg" alt="Jilebi signature dish" fill className="object-cover" /> */}
-          <p className="text-xs tracking-widest uppercase text-muted">Hero photo</p>
+        {/* Hero image */}
+        <div className="relative h-80 lg:h-[480px] bg-sand rounded-sm overflow-hidden">
+          <Image src="/hero.jpg" alt="Jilebi signature dish" fill className="object-cover" priority />
         </div>
       </div>
     </section>
