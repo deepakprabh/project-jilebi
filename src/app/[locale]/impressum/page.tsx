@@ -1,9 +1,12 @@
+import { setRequestLocale } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 
-export default function ImpressumPage({ params }: { params: { locale: string } }) {
+export default async function ImpressumPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  setRequestLocale(locale)
   return (
     <main className="section-padding max-w-2xl mx-auto">
-      {params.locale === 'en' && (
+      {locale === 'en' && (
         <p className="text-xs text-muted mb-6 italic">
           This page is only available in German as required by German law (TMG § 5).
         </p>
