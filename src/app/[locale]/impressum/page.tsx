@@ -13,22 +13,26 @@ export default async function ImpressumPage({ params }: { params: Promise<{ loca
       )}
       <h1 className="section-title mb-6">Impressum</h1>
 
+      <p className="text-xs text-gold/80 mb-6 italic">
+        Hinweis: Diese Seite ist Teil einer Portfolio-Demo. Die Kontaktdaten sind Platzhalter.
+      </p>
+
       <section className="text-sm text-muted leading-relaxed space-y-4">
         <section>
           <h2 className="text-charcoal font-medium mb-1">Angaben gemäß § 5 TMG</h2>
           <p>Jilebi Restaurant<br />
-          Musterstraße 1<br />
+          Marktstraße 8<br />
           72622 Nürtingen<br />
           Deutschland</p>
         </section>
         <section>
           <h2 className="text-charcoal font-medium mb-1">Kontakt</h2>
-          <p>Telefon: +49 7022 123 456<br />
+          <p>Telefon: +49 7022 904 030<br />
           E-Mail: info@jilebi.de</p>
         </section>
         <section>
           <h2 className="text-charcoal font-medium mb-1">Verantwortlich für den Inhalt</h2>
-          <p>[Ihr Name]<br />Musterstraße 1, 72622 Nürtingen</p>
+          <p>Deepak Prabhakaran<br />Marktstraße 8, 72622 Nürtingen</p>
         </section>
       </section>
 

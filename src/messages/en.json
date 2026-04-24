@@ -5,7 +5,9 @@
     "gallery": "Gallery",
     "contact": "Contact",
     "reserve": "Reserve a Table",
-    "lang": "DE"
+    "lang": "DE",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
   },
   "hero": {
     "eyebrow": "Authentic Indian · Nürtingen",
@@ -60,7 +62,8 @@
     "follow": "Follow Us",
     "impressum": "Legal Notice",
     "datenschutz": "Privacy Policy",
-    "copyright": "© 2026 Jilebi. All rights reserved."
+    "copyright": "© 2026 Jilebi. All rights reserved.",
+    "demo_notice": "Portfolio demo · contact details are placeholders"
   },
   "email": {
     "confirm_subject": "Your reservation at Jilebi — Confirmation",

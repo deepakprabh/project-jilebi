@@ -5,7 +5,9 @@
     "gallery": "Galerie",
     "contact": "Kontakt",
     "reserve": "Tisch reservieren",
-    "lang": "EN"
+    "lang": "EN",
+    "open_menu": "Menü öffnen",
+    "close_menu": "Menü schließen"
   },
   "hero": {
     "eyebrow": "Authentisch Indisch · Nürtingen",
@@ -60,7 +62,8 @@
     "follow": "Folgen Sie uns",
     "impressum": "Impressum",
     "datenschutz": "Datenschutz",
-    "copyright": "© 2026 Jilebi. Alle Rechte vorbehalten."
+    "copyright": "© 2026 Jilebi. Alle Rechte vorbehalten.",
+    "demo_notice": "Portfolio-Demo · Kontaktdaten sind Platzhalter"
   },
   "email": {
     "confirm_subject": "Ihre Reservierung bei Jilebi — Bestätigung",
