@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { menu, MenuCategory } from '@/data/menu'
 import GoldenRule from '@/components/ui/GoldenRule'
+import DietaryGlyph from '@/components/ui/DietaryGlyph'
 
 export default function Menu() {
   const t = useTranslations('menu')
@@ -11,61 +12,93 @@ export default function Menu() {
   const [activeCategory, setActiveCategory] = useState<MenuCategory>('starters')
 
   const categories: MenuCategory[] = ['starters', 'mains', 'desserts', 'drinks']
+  const vegLabel = t('veg')
+  const spicyLabel = t('spicy')
 
   return (
     <section id="menu" className="section-padding bg-ivory">
       <div className="max-w-5xl mx-auto">
-        <p className="text-xs tracking-widest uppercase text-gold mb-4">{t('label')}</p>
-        <h2 className="section-title mb-2">{t('title')}</h2>
+        <p className="section-eyebrow mb-5">{t('label')}</p>
+        <h2 className="section-title mb-3">{t('title')}</h2>
         <GoldenRule />
 
         {/* Category tabs */}
-        <div className="flex gap-1 mt-8 mb-10 border-b border-sand">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-3 text-xs tracking-widest uppercase transition-colors ${
-                activeCategory === cat
-                  ? 'text-charcoal border-b-2 border-gold -mb-px'
-                  : 'text-muted hover:text-charcoal'
-              }`}
-            >
-              {t(`categories.${cat}`)}
-            </button>
-          ))}
+        <div
+          role="tablist"
+          aria-label={t('title')}
+          className="flex flex-wrap gap-x-1 mt-10 mb-10 border-b border-sand"
+        >
+          {categories.map((cat) => {
+            const isActive = activeCategory === cat
+            return (
+              <button
+                key={cat}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`menu-panel-${cat}`}
+                id={`menu-tab-${cat}`}
+                onClick={() => setActiveCategory(cat)}
+                className={`relative px-5 py-3 text-xs tracking-widest uppercase transition-colors duration-200 ${
+                  isActive ? 'text-charcoal' : 'text-muted hover:text-charcoal'
+                }`}
+              >
+                {t(`categories.${cat}`)}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-5 right-5 -bottom-px h-px transition-colors duration-200 ${
+                    isActive ? 'bg-gold' : 'bg-transparent'
+                  }`}
+                />
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-6 mb-2 text-[10px] tracking-widest uppercase text-muted">
+          <span className="inline-flex items-center gap-2">
+            <DietaryGlyph type="veg" vegLabel={vegLabel} spicyLabel={spicyLabel} />
+            {vegLabel}
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <DietaryGlyph type="spicy" vegLabel={vegLabel} spicyLabel={spicyLabel} />
+            {spicyLabel}
+          </span>
         </div>
 
         {/* Menu items */}
-        <div className="divide-y divide-sand">
+        <div
+          key={activeCategory}
+          role="tabpanel"
+          id={`menu-panel-${activeCategory}`}
+          aria-labelledby={`menu-tab-${activeCategory}`}
+          className="divide-y divide-sand animate-fade-in"
+        >
           {menu[activeCategory].map((item) => (
-            <div key={item.id} className="py-5 flex justify-between items-start gap-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-charcoal">
-                    {locale === 'en' ? item.nameEN : item.nameDE}
-                  </span>
-                  {item.dietary === 'veg' && (
-                    <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0" title={t('veg')} />
-                  )}
-                  {item.dietary === 'spicy' && (
-                    <span className="text-xs" title={t('spicy')}>🌶</span>
-                  )}
-                  {item.dietary === 'veg-spicy' && (
-                    <>
-                      <span className="w-3 h-3 rounded-full bg-green-500 flex-shrink-0" title={t('veg')} />
-                      <span className="text-xs" title={t('spicy')}>🌶</span>
-                    </>
-                  )}
-                </div>
-                <p className="text-xs text-muted mt-1 leading-relaxed">
-                  {locale === 'en' ? item.descEN : item.descDE}
-                </p>
+            <article
+              key={item.id}
+              className="py-6 grid grid-cols-[1fr_auto] items-baseline gap-x-6"
+            >
+              <div className="flex items-baseline gap-2 min-w-0 flex-wrap">
+                <h3 className="font-serif italic text-lg font-normal text-charcoal leading-snug">
+                  {locale === 'en' ? item.nameEN : item.nameDE}
+                </h3>
+                {item.dietary && (
+                  <DietaryGlyph
+                    type={item.dietary}
+                    vegLabel={vegLabel}
+                    spicyLabel={spicyLabel}
+                  />
+                )}
               </div>
-              <span className="text-sm font-medium text-charcoal flex-shrink-0">
+              <span className="font-serif text-base text-charcoal tabular-nums">
                 €{item.price.toFixed(2).replace('.', ',')}
               </span>
-            </div>
+              <p className="col-span-2 mt-1 text-sm text-muted leading-relaxed max-w-prose">
+                {locale === 'en' ? item.descEN : item.descDE}
+              </p>
+            </article>
           ))}
         </div>
       </div>

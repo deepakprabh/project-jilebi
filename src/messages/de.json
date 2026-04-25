@@ -1,4 +1,8 @@
 {
+  "meta": {
+    "title": "Jilebi — Authentisch indisches Restaurant in Nürtingen",
+    "description": "Handwerklich zubereitete indische Küche im Herzen Nürtingens. Reservieren Sie online, bequem in zwei Schritten."
+  },
   "nav": {
     "about": "Über uns",
     "menu": "Speisekarte",
@@ -15,12 +19,14 @@
     "headline_accent": "Jilebi",
     "tagline": "Erleben Sie die Aromen Indiens — handwerklich zubereitet, mit Leidenschaft serviert.",
     "cta_menu": "Speisekarte",
-    "cta_reserve": "Tisch buchen"
+    "cta_reserve": "Tisch buchen",
+    "image_alt": "Sorgfältig angerichtetes indisches Gericht von Jilebi"
   },
   "about": {
     "label": "Unsere Geschichte",
     "title": "Mehr als ein Restaurant",
-    "body": "Jilebi wurde aus einer tiefen Leidenschaft für die Küche Indiens geboren. Jedes Gericht erzählt eine Geschichte — von gewürzduftenden Märkten, von Familienrezepten, die über Generationen weitergegeben wurden, und von dem Wunsch, echte indische Gastfreundschaft nach Nürtingen zu bringen. Wir verwenden frische, handverlesene Zutaten und bereiten alles täglich frisch zu."
+    "body": "Jilebi wurde aus einer tiefen Leidenschaft für die Küche Indiens geboren. Jedes Gericht erzählt eine Geschichte — von gewürzduftenden Märkten, von Familienrezepten, die über Generationen weitergegeben wurden, und von dem Wunsch, echte indische Gastfreundschaft nach Nürtingen zu bringen. Wir verwenden frische, handverlesene Zutaten und bereiten alles täglich frisch zu.",
+    "image_alt": "Warm beleuchteter Innenraum des Restaurants Jilebi"
   },
   "menu": {
     "label": "Unsere Küche",
@@ -39,26 +45,48 @@
     "title": "Einen Tisch buchen",
     "date_label": "Datum wählen",
     "slot_label": "Uhrzeit wählen",
+    "loading_slots": "Verfügbare Zeiten werden geladen…",
     "no_slots": "Keine freien Tische an diesem Tag.",
+    "details_label": "Ihre Angaben",
     "form": {
       "name": "Ihr Name",
+      "name_label": "Name",
       "party_size": "Personenanzahl",
+      "party_size_label": "Personen",
+      "party_size_option": "{n, plural, one {# Gast} other {# Gäste}}",
       "email": "E-Mail-Adresse",
+      "email_label": "E-Mail",
       "phone": "Telefonnummer",
+      "phone_label": "Telefon",
       "notes": "Anmerkungen (optional)",
-      "submit": "Jetzt reservieren"
+      "notes_label": "Anmerkungen",
+      "submit": "Jetzt reservieren",
+      "submitting": "Wird gesendet…"
     },
     "success_title": "Reservierung erhalten!",
     "success_body": "Wir haben Ihre Anfrage erhalten und werden Ihnen eine Bestätigung per E-Mail senden.",
+    "success_party": "{count, plural, one {# Gast} other {# Gäste}}",
+    "success_email": "Bestätigung folgt an {email}.",
+    "success_book_another": "Weitere Reservierung",
     "error": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
   },
   "gallery": {
     "label": "Einblicke",
-    "title": "Galerie"
+    "title": "Galerie",
+    "prev": "Vorheriges Bild",
+    "next": "Nächstes Bild",
+    "close": "Schließen"
   },
   "footer": {
     "hours_title": "Öffnungszeiten",
+    "lunch": "Mittag",
+    "dinner": "Abend",
+    "lunch_hours": "12:00 – 14:00",
+    "dinner_hours": "18:00 – 22:00",
+    "closed_note": "Montags geschlossen",
     "address_title": "Adresse",
+    "phone_label": "Telefon",
+    "email_label": "E-Mail",
     "follow": "Folgen Sie uns",
     "impressum": "Impressum",
     "datenschutz": "Datenschutz",

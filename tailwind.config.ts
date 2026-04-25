@@ -10,10 +10,12 @@ const config: Config = {
         gold: '#C9923A',
         muted: '#7A6E5A',
         sand: '#E8E0D4',
+        leaf: '#6F8F4A',
+        chili: '#B65C3F',
       },
       fontFamily: {
-        serif: ['Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['Georgia', 'Cambria', '"Times New Roman"', 'serif'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {
         widest: '0.3em',
