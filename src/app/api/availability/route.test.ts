@@ -7,10 +7,19 @@ import { NextRequest } from 'next/server'
 const mockFrom = jest.fn()
 
 jest.mock('@/lib/supabase', () => ({
-  getSupabase: () => ({ from: mockFrom }),
+  getSupabaseAdmin: () => ({ from: mockFrom }),
 }))
 
 describe('GET /api/availability', () => {
+  beforeAll(() => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2026-04-14T12:00:00Z'))
+  })
+
+  afterAll(() => {
+    jest.useRealTimers()
+  })
+
   beforeEach(() => {
     mockFrom.mockReset()
   })
@@ -28,7 +37,7 @@ describe('GET /api/availability', () => {
     const res = await GET(req)
     expect(res.status).toBe(400)
     const body = await res.json()
-    expect(body.error).toBe('date must be YYYY-MM-DD')
+    expect(body.error).toBe('date must be a real YYYY-MM-DD date')
   })
 
   it('returns 400 when date is the wrong shape', async () => {
@@ -36,7 +45,23 @@ describe('GET /api/availability', () => {
     const res = await GET(req)
     expect(res.status).toBe(400)
     const body = await res.json()
-    expect(body.error).toBe('date must be YYYY-MM-DD')
+    expect(body.error).toBe('date must be a real YYYY-MM-DD date')
+  })
+
+  it('returns 400 when date is not a real calendar day', async () => {
+    const req = new NextRequest('http://localhost/api/availability?date=2026-02-31')
+    const res = await GET(req)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('date must be a real YYYY-MM-DD date')
+  })
+
+  it('returns 400 when date is outside the reservation window', async () => {
+    const req = new NextRequest('http://localhost/api/availability?date=2026-06-15')
+    const res = await GET(req)
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toBe('date is outside the reservation window')
   })
 
   it('returns empty slots when none exist for the day', async () => {
@@ -48,7 +73,7 @@ describe('GET /api/availability', () => {
       }),
     })
 
-    const req = new NextRequest('http://localhost/api/availability?date=2026-04-13') // Monday = closed
+    const req = new NextRequest('http://localhost/api/availability?date=2026-04-20') // Monday = closed
     const res = await GET(req)
     expect(res.status).toBe(200)
     const body = await res.json()

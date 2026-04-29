@@ -1,28 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
+import { getUtcDayOfWeek, isValidDateOnly, isWithinReservationWindow } from '@/lib/request-security'
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get('date')
   if (!date) {
     return NextResponse.json({ error: 'date parameter required' }, { status: 400 })
   }
-  if (!DATE_RE.test(date) || Number.isNaN(Date.parse(date))) {
-    return NextResponse.json({ error: 'date must be YYYY-MM-DD' }, { status: 400 })
+  if (!isValidDateOnly(date)) {
+    return NextResponse.json({ error: 'date must be a real YYYY-MM-DD date' }, { status: 400 })
+  }
+  if (!isWithinReservationWindow(date)) {
+    return NextResponse.json({ error: 'date is outside the reservation window' }, { status: 400 })
   }
 
-  const dayOfWeek = new Date(date).getUTCDay()
+  const dayOfWeek = getUtcDayOfWeek(date)
 
   // Fetch template slots for this day of week
-  const { data: slots, error: slotsError } = await getSupabase()
+  const { data: slots, error: slotsError } = await getSupabaseAdmin()
     .from('time_slots')
-    .select('*')
+    .select('id, start_time, end_time, max_capacity')
     .eq('day_of_week', dayOfWeek)
     .eq('is_blocked', false)
 
   if (slotsError) {
-    return NextResponse.json({ error: slotsError.message }, { status: 500 })
+    console.error('[availability] slots query failed:', slotsError)
+    return NextResponse.json({ error: 'Unable to load availability' }, { status: 500 })
   }
 
   if (!slots || slots.length === 0) {
@@ -32,7 +36,7 @@ export async function GET(req: NextRequest) {
   const slotIds = slots.map((s) => s.id)
 
   // Count booked party sizes per slot for this date (exclude cancelled)
-  const { data: reservations, error: resError } = await getSupabase()
+  const { data: reservations, error: resError } = await getSupabaseAdmin()
     .from('reservations')
     .select('time_slot_id, party_size')
     .eq('date', date)
@@ -40,7 +44,8 @@ export async function GET(req: NextRequest) {
     .neq('status', 'cancelled')
 
   if (resError) {
-    return NextResponse.json({ error: resError.message }, { status: 500 })
+    console.error('[availability] reservations query failed:', resError)
+    return NextResponse.json({ error: 'Unable to load availability' }, { status: 500 })
   }
 
   const bookedBySlot: Record<string, number> = {}

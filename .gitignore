@@ -38,6 +38,7 @@ next-env.d.ts
 # Supabase local dev
 .supabase/
 supabase/.branches/
+supabase/.temp/
 
 # Project internals
 .worktrees/
