@@ -1,182 +1,323 @@
-# Jilebi — Restaurant Website & Reservation System
+# Jilebi - Restaurant Website & Reservation System
 
 [![CI](https://github.com/deepakprabh/project-jilebi/actions/workflows/ci.yml/badge.svg)](https://github.com/deepakprabh/project-jilebi/actions/workflows/ci.yml)
 
-Full-stack bilingual (DE/EN) restaurant platform with real-time table reservations, row-level-security-backed data access, and a cookie-authenticated admin dashboard. Built for an authentic Indian restaurant in Nürtingen, Germany.
+Production-style full-stack reservation platform for Jilebi, an Indian restaurant concept in Nürtingen, Germany. The project combines a bilingual marketing site, a capacity-aware booking flow, transactional email, and a protected admin dashboard backed by Supabase PostgreSQL.
 
-**Live:** [project-jilebi.vercel.app](https://project-jilebi.vercel.app)
+**Live demo:** [project-jilebi.vercel.app](https://project-jilebi.vercel.app)  
+**Primary focus:** secure reservation handling, database-level consistency, localized UX, and recruiter-readable production engineering.
+
+## Why This Project Matters
+
+Jilebi is more than a static restaurant page. It models the operational problems a real restaurant needs solved:
+
+- Guests can browse the restaurant, menu, gallery, and legal pages in German or English.
+- Guests can request a table only for valid dates and available time slots.
+- The backend prevents overbooking even under concurrent requests.
+- Confirmation and cancellation emails are sent through Resend.
+- Admin users can review, confirm, and cancel reservations from a private dashboard.
+- Customer data is protected with Supabase Row Level Security and server-only service-role access.
+
+The result is a small but complete product surface with frontend polish, backend validation, database constraints, authentication, email delivery, tests, CI, and deployment configuration.
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 (App Router) |
+| --- | --- |
+| Framework | Next.js 16 App Router |
 | Language | TypeScript |
-| Styling | Tailwind CSS |
-| Database | Supabase (PostgreSQL + RLS + triggers) |
-| Email | Resend |
-| i18n | next-intl (DE default + EN) |
+| UI | React 18, Tailwind CSS, React DayPicker |
+| Internationalization | next-intl with German and English routes |
+| Database | Supabase PostgreSQL, Row Level Security, triggers |
+| Email | Resend, React Email rendering |
+| Testing | Jest, Testing Library, Playwright |
+| Tooling | ESLint, TypeScript, Sharp image optimization |
 | Deployment | Vercel |
-
-## Technical Highlights
-
-These are the parts worth reading — each one solves a real production problem:
-
-### Atomic overbooking prevention at the database layer
-Concurrent `INSERT`s against the same time slot can't overcommit capacity — a Postgres trigger (`check_slot_capacity`) re-sums party sizes inside the insert transaction and raises `Slot capacity exceeded` before the row commits. The API then translates that into a clean `409 Conflict`. No distributed locks, no optimistic retries.
-
-→ [`supabase/migrations/002_rls_and_overbooking.sql`](supabase/migrations/002_rls_and_overbooking.sql)
-→ [`src/app/api/reservations/route.ts`](src/app/api/reservations/route.ts)
-
-### Two Supabase clients, defensive by default
-The public client uses the **anon key** and is constrained by Row Level Security. The admin client uses the **service role** and is only ever called from server code. Reservation rows are literally unreadable without service role — the PII surface is sealed off at the database, not just at the API.
-
-→ [`src/lib/supabase.ts`](src/lib/supabase.ts)
-
-### HMAC-signed, httpOnly session cookies
-Admin auth doesn't live in localStorage or a bearer token. Login sets a signed `jilebi_admin_session` cookie (HMAC-SHA256 over timestamp, 8h expiry). All comparisons are length-safe via SHA-256-then-`timingSafeEqual`, so unequal inputs don't throw *and* don't leak byte-level timing.
-
-→ [`src/lib/auth.ts`](src/lib/auth.ts)
-
-### Input validation at the trust boundary
-The reservation POST endpoint doesn't trust the client UI — every field is typechecked, regex-matched (UUID, ISO date, email), and bounds-checked (`party_size` 1–10, `language` enum) before touching the database. DB errors become `400` on input shape and `409` on capacity.
-
-→ [`src/app/api/reservations/route.ts`](src/app/api/reservations/route.ts)
-
-### Race-free availability fetching
-The date-picker spawns a new availability request on every selection. An `AbortController` cancels any in-flight request so a slow response can't overwrite a newer one.
-
-→ [`src/components/sections/Reservation.tsx`](src/components/sections/Reservation.tsx)
-
-### Transactional email with delivery tracking
-Confirmation emails are fired asynchronously so a Resend outage can't break the booking flow. On success, `email_sent_at` is written back to the reservation row — the admin dashboard flags undelivered confirmations with a badge.
-
-→ [`src/lib/resend.ts`](src/lib/resend.ts)
-
-### HTML-escape everywhere user input touches HTML
-Email templates HTML-escape every interpolated field (`name`, `notes`, formatted date). Prevents tracking-pixel injection and phishing-style forwards.
-
-### Rate limiting
-Public reservation endpoint is rate-limited to 5 requests per IP per minute via a sliding-window limiter. Per-instance today (documented trade-off); the swap path to Upstash Redis is noted in the module header.
-
-→ [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts)
-
-### Tested end-to-end with mocked network
-Playwright specs under [`e2e/`](e2e/) drive the real UI across desktop and mobile viewports. Supabase and Resend are intercepted via `page.route()`, so the test proves the *product flow* — availability lookup, slot selection, form submission, success state — without brittle external dependencies. Unit tests under `src/app/api/**` cover the API routes themselves.
-
-### Self-reviewed
-A full code review of the first pass is checked in at [`code-review.md`](code-review.md) with 10 findings across security, validation, and i18n, all closed across four commits. This is part of the project, not a separate artifact.
 
 ## Features
 
-- **Real-time reservations** — date picker, capacity-aware time slot grid, 30-day booking horizon
-- **Bilingual** — full DE/EN support via `next-intl` with locale-aware routing helpers
-- **Admin dashboard** — view / confirm / cancel bookings, flagged undelivered emails
-- **Transactional email** — confirmation and cancellation emails via Resend
-- **Menu** — tabbed categories with dietary indicators, served from typed static data
-- **Gallery** — masonry grid with keyboard-navigable lightbox
-- **Legal** — German-required Impressum and Datenschutz pages
-- **Mobile-first** — responsive hamburger nav, optimized hero and gallery images
+- **Bilingual public site:** German default route with English support through locale-aware routing and message files.
+- **Reservation flow:** Date picker, 30-day booking window, party-size input, notes, success state, and capacity-aware slot selection.
+- **Availability API:** Calculates booked seats per slot and hides blocked slots from the guest booking flow.
+- **Atomic overbooking prevention:** PostgreSQL trigger serializes capacity checks per `(date, time_slot_id)` with `pg_advisory_xact_lock`.
+- **Admin dashboard:** Cookie-authenticated reservation list grouped by date, with confirm and cancel actions.
+- **Transactional email:** Confirmation and cancellation emails through Resend, with `email_sent_at` tracking for admin visibility.
+- **Security hardening:** Same-origin checks, rate limiting, input validation, RLS-protected tables, server-only Supabase service-role client, and httpOnly signed admin cookies.
+- **Restaurant content:** Hero, about, typed menu data, gallery lightbox, dietary indicators, footer, Impressum, and Datenschutz pages.
+- **Responsive UX:** Mobile navigation, accessible form states, keyboard-friendly success focus, and optimized image assets.
 
 ## Architecture
 
-```
-Browser (React Server/Client Components)
-  │
-  ├── GET  /api/availability?date=YYYY-MM-DD   anon key, RLS: public read on time_slots
-  ├── POST /api/reservations                   rate-limited, capacity trigger, Resend fire-and-forget
-  ├── POST /api/admin/login                    sets HMAC-signed httpOnly cookie
-  └── GET/PATCH /api/admin/reservations        cookie auth, service role
-       │
-Supabase (PostgreSQL)
-  │
-  ├── time_slots                               template: day-of-week + time + capacity
-  ├── reservations                             PII; RLS blocks everything except service_role
-  ├── settings                                 max_party_size, advance_days
-  └── check_slot_capacity() TRIGGER            BEFORE INSERT/UPDATE — atomic overbooking guard
-  │
+```text
+Browser
+  |
+  |-- GET  /de or /en
+  |       Localized Next.js App Router pages
+  |
+  |-- GET  /api/availability?date=YYYY-MM-DD
+  |       Validates date window, reads slots and booked seats
+  |
+  |-- POST /api/reservations
+  |       Same-origin check, rate limit, input validation,
+  |       database insert, confirmation email, delivery tracking
+  |
+  |-- POST /api/admin/login
+  |       Password verification, signed httpOnly session cookie
+  |
+  |-- GET/PATCH /api/admin/reservations
+          Cookie auth, service-role database access, status updates
+
+Supabase PostgreSQL
+  |
+  |-- time_slots
+  |       Day-of-week slot templates, capacity, blocked flag
+  |
+  |-- reservations
+  |       Guest PII, party size, status, email delivery timestamp
+  |
+  |-- settings
+  |       Reservation limits and configuration
+  |
+  |-- check_slot_capacity()
+          Trigger-level consistency guard against overbooking
+
 Resend
-  └── Confirmation / cancellation emails       sendConfirmationEmail() returns boolean; caller
-                                               records delivery timestamp for admin visibility
+  |
+  |-- Confirmation and cancellation emails
 ```
 
-## Getting Started
+## Technical Highlights
+
+### Database-Level Overbooking Protection
+
+The most important business rule is enforced in PostgreSQL, not just in the UI or API. `check_slot_capacity()` runs before reservation writes, locks the slot/date pair for the transaction, sums active reservations, rejects blocked or mismatched slots, and raises `Slot capacity exceeded` when the party would exceed capacity.
+
+Relevant files:
+
+- [`supabase/migrations/004_security_hardening.sql`](supabase/migrations/004_security_hardening.sql)
+- [`src/app/api/reservations/route.ts`](src/app/api/reservations/route.ts)
+
+### Defensive Supabase Access Model
+
+The app separates public and privileged database access:
+
+- Browser-safe client: anon key plus RLS.
+- Server-only admin client: service-role key used only in route handlers and server code.
+- Direct anonymous reservation inserts are disabled; all writes go through the validated Next.js API.
+
+Relevant file:
+
+- [`src/lib/supabase.ts`](src/lib/supabase.ts)
+
+### Secure Admin Sessions
+
+Admin login sets a signed `jilebi_admin_session` cookie with `httpOnly`, `sameSite=lax`, production-only `secure`, and an 8-hour expiry. Session signatures use HMAC-SHA256, and comparisons hash both values before `timingSafeEqual` so unequal lengths do not throw or expose byte-level timing behavior.
+
+Relevant file:
+
+- [`src/lib/auth.ts`](src/lib/auth.ts)
+
+### Trust-Boundary Validation
+
+The reservation endpoint validates everything before touching the database:
+
+- required fields
+- email shape
+- UUID format
+- real `YYYY-MM-DD` dates
+- 1-30 day reservation window
+- party size bounds
+- locale enum
+- notes and text length limits
+- same-origin request checks
+
+Capacity conflicts are returned as `409 Conflict`; malformed requests return `400`; abuse is throttled with `429`.
+
+Relevant files:
+
+- [`src/app/api/reservations/route.ts`](src/app/api/reservations/route.ts)
+- [`src/lib/request-security.ts`](src/lib/request-security.ts)
+- [`src/lib/rate-limit.ts`](src/lib/rate-limit.ts)
+
+### Race-Free Availability UI
+
+The reservation component aborts stale availability requests when a guest changes dates quickly. That prevents a slow response for an older date from overwriting the currently selected date's slots.
+
+Relevant file:
+
+- [`src/components/sections/Reservation.tsx`](src/components/sections/Reservation.tsx)
+
+### Email Delivery Visibility
+
+Reservation creation awaits the confirmation email in the serverless request lifecycle, then records `email_sent_at` when delivery succeeds. The admin dashboard flags active reservations without a delivery timestamp so staff can follow up manually.
+
+Relevant files:
+
+- [`src/lib/resend.ts`](src/lib/resend.ts)
+- [`src/components/admin/ReservationTable.tsx`](src/components/admin/ReservationTable.tsx)
+
+## Testing and Quality
+
+The project includes layered automated checks:
+
+- **Unit tests:** API route behavior and UI components with Jest and Testing Library.
+- **E2E tests:** Playwright drives the real localized UI across desktop and mobile contexts.
+- **Network mocking:** E2E specs intercept Supabase-facing reservation and availability requests, keeping product-flow tests deterministic.
+- **CI:** GitHub Actions runs install, lint, unit tests, production build, Playwright browser install, and E2E tests on pushes and pull requests to `master`.
+- **Security review trail:** [`code-review.md`](code-review.md) documents the review findings that drove the validation, auth, RLS, and security hardening work.
+
+Common verification commands:
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/deepakprabh/project-jilebi.git
-cd project-jilebi
-npm install
-
-# 2. Configure environment
-cp .env.local.example .env.local
-# Fill in Supabase URL + keys, Resend API key, admin password
-
-# 3. Set up the database
-# Run all three migrations in the Supabase SQL editor:
-#   supabase/migrations/001_initial_schema.sql
-#   supabase/migrations/002_rls_and_overbooking.sql
-#   supabase/migrations/003_email_sent_at.sql
-
-# 4. Develop
-npm run dev        # http://localhost:3000
-
-# 5. Verify
-npm run lint       # ESLint
-npm test           # Jest — 18 unit tests / 6 suites
-npm run test:e2e   # Playwright — reservation flow + mobile nav, desktop + mobile viewports
-npm run build      # production build
+npm run lint
+npm test
+npm run test:e2e
+npm run build
 ```
 
 ## Project Structure
 
-```
+```text
 src/
   app/
-    [locale]/           locale-scoped pages (DE default, EN)
-      admin/            password-protected admin dashboard
-      datenschutz/      privacy policy (German legal requirement)
-      impressum/        legal notice (German legal requirement)
-      page.tsx          single-page: Hero · About · Menu · Reservation · Gallery · Footer
+    [locale]/
+      page.tsx              Localized public restaurant page
+      admin/                Protected admin dashboard
+      datenschutz/          German privacy page
+      impressum/            German legal notice
     api/
-      availability/     GET — open slots for a date
-      reservations/     POST — create a booking
+      availability/         Public availability endpoint
+      reservations/         Public reservation creation endpoint
       admin/
-        login/          POST — admin auth
-        reservations/   GET/PATCH — list + update bookings
-        slots/          PATCH — block/unblock slots
+        login/              Admin login endpoint
+        reservations/       Admin list/update endpoint
+        slots/              Slot block/unblock endpoint
   components/
-    sections/           page sections
-    admin/              AdminLogin, ReservationTable
-    ui/                 TimeSlotPicker, Lightbox, StatusBadge, GoldenRule
-  data/                 static data (menu, gallery)
-  i18n/                 routing, request config, locale-aware navigation
-  lib/                  Supabase clients, Resend, auth, rate limiting
-  messages/             de.json, en.json — all UI strings
+    sections/               Public page sections
+    admin/                  Admin login and reservation table
+    ui/                     Shared UI components
+  data/                     Typed menu and gallery data
+  i18n/                     next-intl routing and request config
+  lib/                      Supabase, auth, email, rate limit, request security
+  messages/                 de.json and en.json translations
+
 supabase/
-  migrations/           001 schema · 002 RLS + overbooking · 003 email tracking
+  migrations/               Schema, RLS, email tracking, security hardening
+
+e2e/
+  reservation.spec.ts       Playwright booking flow and mobile navigation tests
+
 scripts/
-  optimize-images.mjs   JPEG compression pipeline (sharp + mozjpeg)
+  optimize-images.mjs       Sharp-based image optimization
 ```
 
-## Environment Variables
+## Getting Started
 
-See `.env.local.example`:
+### Prerequisites
+
+- Node.js 20+
+- npm 11 recommended, matching the lockfile resolver used in CI
+- Supabase project
+- Resend API key
+
+### Install
+
+```bash
+git clone https://github.com/deepakprabh/project-jilebi.git
+cd project-jilebi
+npm install
+```
+
+### Configure Environment
+
+Create `.env.local` from the example:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in:
 
 | Variable | Purpose |
-|----------|---------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (public) |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public, RLS-enforced) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-only, bypasses RLS) |
-| `RESEND_API_KEY` | Resend API key |
-| `RESEND_FROM_EMAIL` | Sender address for booking emails |
-| `ADMIN_PASSWORD` | Admin dashboard password (also HMAC secret) |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Public Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key constrained by RLS |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key for trusted API routes |
+| `RESEND_API_KEY` | Resend API key for transactional email |
+| `RESEND_FROM_EMAIL` | Sender address for reservation emails |
+| `ADMIN_PASSWORD` | Admin password and HMAC signing secret |
+| `APP_ORIGIN` | Optional trusted origin override for same-origin checks |
 
-## Trade-offs Documented in Code
+### Database Setup
 
-- `src/lib/rate-limit.ts` — in-memory per-instance limiter. On Vercel Fluid Compute, effective limit is roughly `N × limit` across replicas. Upstash Redis swap path noted.
-- `src/app/page.tsx` — root redirect to `/de` is deterministic rather than Accept-Language-driven. Product decision, not a bug.
-- `check_slot_capacity()` — plpgsql-level check is safe under normal concurrency. At very high concurrent write load, wrap in `SERIALIZABLE` or take an advisory lock per `(date, time_slot_id)`.
+Run the Supabase migrations in order:
+
+```text
+supabase/migrations/001_initial_schema.sql
+supabase/migrations/002_rls_and_overbooking.sql
+supabase/migrations/003_email_sent_at.sql
+supabase/migrations/004_security_hardening.sql
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). The root route redirects to `/de`.
+
+### Production Build
+
+```bash
+npm run build
+npm start
+```
+
+## API Overview
+
+| Route | Method | Purpose | Auth |
+| --- | --- | --- | --- |
+| `/api/availability?date=YYYY-MM-DD` | GET | Return open slots and capacity state for a date | Public |
+| `/api/reservations` | POST | Create a pending reservation and send confirmation email | Public, same-origin, rate-limited |
+| `/api/admin/login` | POST | Create signed admin session cookie | Password |
+| `/api/admin/reservations` | GET | List reservations with slot details | Admin cookie |
+| `/api/admin/reservations` | PATCH | Confirm or cancel a reservation | Admin cookie |
+| `/api/admin/slots` | PATCH | Block or unblock a time slot | Admin cookie |
+
+## Data Model
+
+Core tables:
+
+- `time_slots`: reusable weekly slot templates with capacity and blocked state.
+- `reservations`: guest booking records, party size, date, status, notes, and email tracking.
+- `settings`: operational reservation settings.
+
+Key database behavior:
+
+- Row Level Security protects reservation data from public reads.
+- Public direct reservation inserts are removed in the hardening migration.
+- Trigger logic prevents overbooking and rejects invalid slot/date combinations.
+- Cancelled reservations are excluded from booked-seat totals.
+
+## Trade-Offs
+
+- **Rate limiting:** The current limiter is in-memory and per runtime instance. It is appropriate for a low-traffic demo and has a narrow API so it can be swapped for Upstash Redis without changing route handlers.
+- **Admin auth:** The dashboard uses a single-password signed-cookie model. This keeps the project focused while still demonstrating secure cookie handling. A production multi-user system would use a dedicated identity provider, role model, and password rotation flow.
+- **Email reliability:** Reservation creation does not fail if email delivery fails. Instead, delivery is tracked and surfaced in the admin UI so the restaurant can follow up.
+- **Locale routing:** `/de` is the default route. The root redirect is deterministic rather than Accept-Language driven.
+
+## Recruiter Review Guide
+
+For a quick technical review, start here:
+
+1. Reservation API validation and email flow: [`src/app/api/reservations/route.ts`](src/app/api/reservations/route.ts)
+2. Database capacity and RLS hardening: [`supabase/migrations/004_security_hardening.sql`](supabase/migrations/004_security_hardening.sql)
+3. Admin session security: [`src/lib/auth.ts`](src/lib/auth.ts)
+4. Reservation UI and stale-request cancellation: [`src/components/sections/Reservation.tsx`](src/components/sections/Reservation.tsx)
+5. Product-level E2E coverage: [`e2e/reservation.spec.ts`](e2e/reservation.spec.ts)
+
+These files show the main engineering decisions: validation at the API boundary, consistency at the database boundary, guarded admin access, localized frontend behavior, and tested user journeys.
 
 ## License
 
