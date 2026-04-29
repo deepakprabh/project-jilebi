@@ -39,7 +39,10 @@
 
 @layer components {
   .section-padding {
-    @apply px-6 py-20 md:px-16 md:py-24 lg:px-24 lg:py-28;
+    @apply px-6 py-14 md:px-16 md:py-16 lg:px-24 lg:py-20;
+  }
+  .hero-padding {
+    @apply px-6 py-12 md:px-16 md:py-14 lg:px-24 lg:py-16;
   }
   .section-eyebrow {
     @apply text-xs tracking-widest uppercase text-gold;

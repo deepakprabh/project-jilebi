@@ -6,11 +6,11 @@ export default function Hero() {
   const t = useTranslations('hero')
 
   return (
-    <section className="min-h-[calc(100vh-4rem)] flex items-center section-padding bg-ivory">
-      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+    <section className="min-h-[calc(100svh-5rem)] flex items-center hero-padding bg-ivory">
+      <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
         {/* Text */}
         <div>
-          <p className="section-eyebrow mb-6">{t('eyebrow')}</p>
+          <p className="section-eyebrow mb-5">{t('eyebrow')}</p>
           <h1 className="font-serif text-charcoal">
             <span className="block text-2xl md:text-3xl italic font-normal leading-tight text-charcoal/70">
               {t('headline')}
@@ -22,8 +22,8 @@ export default function Hero() {
               {t('headline_accent')}
             </span>
           </h1>
-          <GoldenRule className="mt-7" />
-          <p className="text-muted text-base leading-relaxed max-w-md mt-5 mb-10">
+          <GoldenRule className="mt-6" />
+          <p className="text-muted text-base leading-relaxed max-w-md mt-4 mb-8">
             {t('tagline')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -33,7 +33,7 @@ export default function Hero() {
         </div>
 
         {/* Hero image */}
-        <div className="relative h-80 lg:h-[520px] bg-sand overflow-hidden">
+        <div className="relative h-72 md:h-80 lg:h-[460px] bg-sand overflow-hidden">
           <Image
             src="/hero.jpg"
             alt={t('image_alt')}

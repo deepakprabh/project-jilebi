@@ -30,6 +30,35 @@ const MOCK_SLOTS = {
   ],
 }
 
+async function expectLocatorWithinViewport(locator: import('@playwright/test').Locator) {
+  await expect(locator).toBeVisible()
+  const box = await locator.boundingBox()
+  expect(box).not.toBeNull()
+  expect(box!.y).toBeGreaterThanOrEqual(0)
+  expect(box!.y + box!.height).toBeLessThanOrEqual(720)
+}
+
+async function pickFirstAvailableDay(page: import('@playwright/test').Page) {
+  const enabledDays = page.locator('[role="gridcell"] button:not([disabled])')
+
+  if ((await enabledDays.count()) === 0) {
+    await page.getByRole('button', { name: /next month/i }).click()
+  }
+
+  await enabledDays.first().click()
+}
+
+test.describe('Hero section', () => {
+  test('desktop CTAs are visible in the first viewport', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'desktop-only')
+
+    await page.goto('/en')
+
+    await expectLocatorWithinViewport(page.getByRole('link', { name: 'View Menu' }))
+    await expectLocatorWithinViewport(page.getByRole('link', { name: 'Book a Table' }))
+  })
+})
+
 test.describe('Reservation flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/api/availability*', async (route) => {
@@ -68,9 +97,7 @@ test.describe('Reservation flow', () => {
     const reservationHeading = page.getByRole('heading', { name: /Einen Tisch buchen/i })
     await reservationHeading.scrollIntoViewIfNeeded()
 
-    // Pick the first non-disabled day in the calendar
-    const firstAvailableDay = page.locator('[role="gridcell"] button:not([disabled])').first()
-    await firstAvailableDay.click()
+    await pickFirstAvailableDay(page)
 
     // Time slot "18:00 – 20:00" appears once availability mock resolves
     await page.getByRole('button', { name: /18:00\s*[–-]\s*20:00/ }).click()
@@ -100,7 +127,7 @@ test.describe('Reservation flow', () => {
     })
 
     await page.goto('/de')
-    await page.locator('[role="gridcell"] button:not([disabled])').first().click()
+    await pickFirstAvailableDay(page)
 
     const fullSlot = page.getByRole('button', { name: /20:00\s*[–-]\s*22:00/ })
     await expect(fullSlot).toBeDisabled()
