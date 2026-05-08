@@ -1,6 +1,6 @@
 # Jilebi - Restaurant Website & Reservation System
 
-[![CI](https://github.com/deepakprabh/project-jilebi/actions/workflows/ci.yml/badge.svg)](https://github.com/deepakprabh/project-jilebi/actions/workflows/ci.yml)
+[![CI](https://github.com/deepakpk-dev/project-jilebi/actions/workflows/ci.yml/badge.svg)](https://github.com/deepakpk-dev/project-jilebi/actions/workflows/ci.yml)
 
 Production-style full-stack reservation platform for Jilebi, an Indian restaurant concept in Nürtingen, Germany. The project combines a bilingual marketing site, a capacity-aware booking flow, transactional email, and a protected admin dashboard backed by Supabase PostgreSQL.
 
@@ -223,7 +223,7 @@ scripts/
 ### Install
 
 ```bash
-git clone https://github.com/deepakprabh/project-jilebi.git
+git clone https://github.com/deepakpk-dev/project-jilebi.git
 cd project-jilebi
 npm install
 ```
