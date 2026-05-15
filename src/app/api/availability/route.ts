@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
 
   const dayOfWeek = getUtcDayOfWeek(date)
 
-  // Fetch template slots for this day of week
+  // The response is public, but booked-seat totals depend on reservations,
+  // which stay service-role-only under RLS to protect guest PII.
   const { data: slots, error: slotsError } = await getSupabaseAdmin()
     .from('time_slots')
     .select('id, start_time, end_time, max_capacity')

@@ -164,7 +164,7 @@ The project includes layered automated checks:
 - **E2E tests:** Playwright drives the real localized UI across desktop and mobile contexts.
 - **Network mocking:** E2E specs intercept Supabase-facing reservation and availability requests, keeping product-flow tests deterministic.
 - **CI:** GitHub Actions runs install, lint, unit tests, production build, Playwright browser install, and E2E tests on pushes and pull requests to `master`.
-- **Security review trail:** [`code-review.md`](code-review.md) documents the review findings that drove the validation, auth, RLS, and security hardening work.
+- **Security hardening trail:** The migrations and API modules document the validation, auth, RLS, and consistency work directly in versioned source.
 
 Common verification commands:
 

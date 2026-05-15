@@ -27,7 +27,11 @@ export async function updateReservationStatus(id: string, status: 'confirmed' | 
   }
 
   if (status === 'cancelled') {
-    sendCancellationEmail(data).catch(console.error)
+    try {
+      await sendCancellationEmail(data)
+    } catch (err) {
+      console.error('[admin action] cancellation email failed:', err)
+    }
   }
 
   return data

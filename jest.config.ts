@@ -15,6 +15,7 @@ const config: Config = {
     '<rootDir>/.next/',
     '<rootDir>/.worktrees/',
   ],
+  modulePathIgnorePatterns: ['<rootDir>/.worktrees/'],
 }
 
 export default createJestConfig(config)

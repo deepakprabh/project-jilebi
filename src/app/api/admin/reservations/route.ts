@@ -66,7 +66,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   if (status === 'cancelled') {
-    sendCancellationEmail(reservation).catch(console.error)
+    try {
+      await sendCancellationEmail(reservation)
+    } catch (err) {
+      console.error('[admin reservations] cancellation email failed:', err)
+    }
   }
 
   return NextResponse.json({ reservation })
